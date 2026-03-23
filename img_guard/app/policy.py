@@ -10,6 +10,7 @@ from typing import List
 
 from app.config import (
     COS_BLOCK,
+    COS_BLOCK_PHASH,
     PHASH_BLOCK,
     COS_ALLOW_A,
     PHASH_ALLOW_A,
@@ -36,9 +37,20 @@ class PolicyEngine:
 
         top = candidates[0]
 
-        # 1) BLOCK 조건
+        # 1) BLOCK: cosine >= 0.98 (확실한 중복)
+        if top.cosine >= COS_BLOCK:
+            return GuardResult(
+                decision=Decision.BLOCK,
+                reason=(
+                    f"Definitely duplicate (cosine={top.cosine:.3f})"
+                ),
+                top_match=top,
+                candidates=candidates,
+            )
+
+        # 2) BLOCK: cosine >= 0.94 AND phash <= 14 (의미적으로도, 픽셀도 유사)
         if (
-            top.cosine >= COS_BLOCK
+            top.cosine >= COS_BLOCK_PHASH
             and top.phash_dist is not None
             and top.phash_dist <= PHASH_BLOCK
         ):
@@ -52,25 +64,32 @@ class PolicyEngine:
                 candidates=candidates,
             )
 
-        # 2) ALLOW 조건
-        if (
-            # 케이스 A: 의미적으로도 낮고, 픽셀도 다름
-            (
-                top.cosine < COS_ALLOW_A
-                and top.phash_dist is not None
-                and top.phash_dist > PHASH_ALLOW_A
-            )
-            # 케이스 B: 의미적으로 확실히 다름
-            or top.cosine < COS_ALLOW_B
-        ):
+        # 3) ALLOW: cosine < 0.81 (의미적으로 다름)
+        if top.cosine < COS_ALLOW_B:
             return GuardResult(
                 decision=Decision.ALLOW,
-                reason=f"No meaningful similarity (top cosine={top.cosine:.3f})",
+                reason=f"Low semantic similarity (cosine={top.cosine:.3f})",
                 top_match=top,
                 candidates=candidates,
             )
 
-        # 3) 나머지는 REVIEW
+        # 4) ALLOW: cosine < 0.88 AND phash > 20 (의미적으로 유사하지만 픽셀 다름)
+        if (
+            top.cosine < COS_ALLOW_A
+            and top.phash_dist is not None
+            and top.phash_dist > PHASH_ALLOW_A
+        ):
+            return GuardResult(
+                decision=Decision.ALLOW,
+                reason=(
+                    f"Different image despite semantic similarity "
+                    f"(cosine={top.cosine:.3f}, phash={top.phash_dist})"
+                ),
+                top_match=top,
+                candidates=candidates,
+            )
+
+        # 5) 나머지는 REVIEW (애매한 케이스)
         return GuardResult(
             decision=Decision.REVIEW,
             reason=(

@@ -150,14 +150,16 @@ MAX_IMAGE_PIXELS = _to_int("MAX_IMAGE_PIXELS", 20000000)
 TOP_K = _to_int("TOP_K", 10)
 TOP_PHASH = _to_int("TOP_PHASH", 10)
 
-# 정책(3상태 룰) threshold v1
-COS_BLOCK = _to_float("COS_BLOCK", 0.97)
-PHASH_BLOCK = _to_int("PHASH_BLOCK", 10)
+# 정책(3상태 룰) threshold v2 (new embedding model)
+# BLOCK 조건
+COS_BLOCK = _to_float("COS_BLOCK", 0.98)                    # cosine >= 0.98 -> BLOCK
+COS_BLOCK_PHASH = _to_float("COS_BLOCK_PHASH", 0.94)       # cosine >= 0.94 and phash <= PHASH_BLOCK -> BLOCK
+PHASH_BLOCK = _to_int("PHASH_BLOCK", 14)                   # phash distance threshold for BLOCK
 
-COS_ALLOW_A = _to_float("COS_ALLOW_A", 0.90)
-PHASH_ALLOW_A = _to_int("PHASH_ALLOW_A", 20)
-
-COS_ALLOW_B = _to_float("COS_ALLOW_B", 0.85)
+# ALLOW 조건
+COS_ALLOW_B = _to_float("COS_ALLOW_B", 0.81)               # cosine < 0.81 -> ALLOW (always)
+COS_ALLOW_A = _to_float("COS_ALLOW_A", 0.88)               # cosine < 0.88 and phash > PHASH_ALLOW_A -> ALLOW
+PHASH_ALLOW_A = _to_int("PHASH_ALLOW_A", 20)               # phash distance threshold for ALLOW
 
 # HNSW 파라미터
 HNSW_M = _to_int("HNSW_M", 16)
