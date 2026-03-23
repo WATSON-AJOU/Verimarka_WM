@@ -1,0 +1,12 @@
+# CPU-first install profile for deployment.
+# - Linux x86_64: force PyTorch CPU wheels (avoid CUDA package bloat)
+# - Other platforms: use regular wheels
+
+-r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+torch==2.10.0+cpu ; platform_system == "Linux" and platform_machine == "x86_64"
+torchvision==0.25.0+cpu ; platform_system == "Linux" and platform_machine == "x86_64"
+
+torch==2.10.0 ; platform_system != "Linux" or platform_machine != "x86_64"
+torchvision==0.25.0 ; platform_system != "Linux" or platform_machine != "x86_64"

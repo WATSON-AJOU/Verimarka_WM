@@ -1,0 +1,6 @@
+# GPU-ready install profile.
+# Use this when deploying on GPU instances (g4/g5/g6).
+
+-r requirements.txt
+torch==2.10.0
+torchvision==0.25.0

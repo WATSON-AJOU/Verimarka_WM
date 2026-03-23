@@ -1,0 +1,15 @@
+numpy
+pandas
+pillow
+matplotlib
+
+open_clip_torch
+transformers
+timm
+
+hnswlib
+ImageHash
+psycopg[binary]
+boto3
+fastapi
+uvicorn
