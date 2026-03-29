@@ -193,9 +193,9 @@ class WamWatermarkBackend(WatermarkBackend):
     def _load_image_tensor(self, input_path: Path):
         assert self._default_transform is not None
         assert self._torch is not None
-        from PIL import Image
+        from PIL import Image, ImageOps
 
-        img = Image.open(input_path).convert("RGB")
+        img = ImageOps.exif_transpose(Image.open(input_path)).convert("RGB")
         return self._default_transform(img).unsqueeze(0).to(self._device)
 
     def _save_image_tensor(self, img_t, out_path: Path) -> None:
